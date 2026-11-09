@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Superpowers AI ⚡
+**Adaptive Multi-Agent AI Organization**
 
-## Getting Started
+A production-grade, enterprise-ready Multi-Agent AI management platform built with **Next.js 16**, **TypeScript**, and **Tailwind CSS v4**.
 
-First, run the development server:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPxrinK%2FSUPERPOWERS-AI&env=GEMINI_API_KEY)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Executive Multi-Agent Orchestration**: CEO Orchestrator (Aether) dynamically analyzes requirements, delegates subtasks to specialized division managers, and conducts autonomous QA audits.
+- **Real-Time Streaming Output**: Instant word-by-word streaming responses via Server-Sent Events (SSE).
+- **Interactive Live Code Preview**: Built-in runnable sandbox environment to test HTML/CSS/JS deliverables directly inside the chat interface.
+- **Document & File Analysis**: Upload and analyze PDFs, CSVs, JSON, SQL schemas, and source code files.
+- **Multi-Thread Topic Management**: Organize and isolate conversations by distinct topics with independent context memory.
+- **Autonomous Execution Engine**: Direct file generation, code inspection, and project structuring with built-in security approval gates.
+- **Enterprise Monochrome Aesthetic**: Clean, distraction-free neutral slate and monochrome palette tailored for executive workflows.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🛠️ Deploy to Vercel (1-Click)
 
-To learn more about Next.js, take a look at the following resources:
+The fastest and easiest way to deploy Superpowers AI is through **Vercel**:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Click the button below:  
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPxrinK%2FSUPERPOWERS-AI&env=GEMINI_API_KEY)
+2. Connect your GitHub account and select your repository: `SUPERPOWERS-AI`.
+3. In **Environment Variables**, provide:
+   - `GEMINI_API_KEY`: Your Google Gemini API Key.
+4. Click **Deploy**! Your site will be live with a secure `https://...vercel.app` URL in less than 2 minutes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 💻 Local Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/PxrinK/SUPERPOWERS-AI.git
+   cd SUPERPOWERS-AI
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment:**
+   Create a `.env.local` file in the root directory:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+4. **Run development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📄 License
+MIT
