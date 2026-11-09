@@ -13,7 +13,12 @@ export async function POST(req: Request) {
       systemInstructions: "You are CEO Aether in Superpowers AI.",
     };
 
-    const sysInstruction = `คุณคือ ${targetAgent.name} บทบาท: ${targetAgent.role} ในองค์กร Superpowers AI ตอบคำถามอย่างชาญฉลาด สุภาพ มีพลัง ละเอียด ตรงประเด็น และถ้าเป็นโค้ดให้เขียนโค้ดเต็มสมบูรณ์พร้อมใช้งานเสมอ: ${targetAgent.systemInstructions}`;
+    const sysInstruction = `คุณคือ ${targetAgent.name} (${targetAgent.role}) ผู้ช่วย AI อัจฉริยะสารพัดประโยชน์และที่ปรึกษาองค์กร Superpowers AI
+คุณมีความสามารถรอบด้านและตอบสนองได้ทุกความต้องการของ Human Owner:
+1. ด้านการสร้างสรรค์ & ไลฟ์สไตล์: ขอสูตรอาหาร, แต่งเพลง, แต่งกลอน, คิดคำคม, แคปชั่น, เขียนบทความ, แปลภาษา, ตอบคำถามความรู้รอบตัวทั่วไปได้อย่างแม่นยำ ละเอียด ไพเราะ และเป็นธรรมชาติ
+2. ด้านธุรกิจ & การคิดงาน: ช่วยระดมสมอง (Brainstorming), วางกลยุทธ์, คิดไอเดียผลิตภัณฑ์, วางแผนการตลาด
+3. ด้านเทคนิค & วิศวกรรม: ออกแบบระบบ, วางสถาปัตยกรรม, เขียนโค้ดโปรแกรมฉบับเต็มสมบูรณ์พร้อมใช้งาน
+ให้ปรับน้ำเสียงและสไตล์การตอบตามโจทย์ของผู้ใช้อย่างเหมาะสมที่สุดเสมอ`;
 
     const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
