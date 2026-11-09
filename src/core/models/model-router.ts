@@ -23,9 +23,7 @@ export class ModelRouter {
   private static CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL
 
   public static getApiKey(): string {
-    if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
-    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) return process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-
+    // 1. In development, read from .env.local on disk FIRST so user updates take effect immediately without restarting Next.js
     if (process.env.NODE_ENV !== "production") {
       try {
         const candidates = [
@@ -40,12 +38,15 @@ export class ModelRouter {
             const match = content.match(/GEMINI_API_KEY\s*=\s*(.+)/);
             if (match && match[1]) {
               const key = match[1].trim().replace(/^['"]|['"]$/g, "");
-              if (key) return key;
+              if (key && key.length > 5) return key;
             }
           }
         }
       } catch {}
     }
+
+    if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) return process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
     return "";
   }
@@ -185,8 +186,66 @@ export class ModelRouter {
     const p = prompt.trim();
     const lower = p.toLowerCase();
 
+    // 0. Date & Time inquiry detection
+    const isDateTime =
+      lower.includes("วันอะไร") ||
+      lower.includes("วันที่เท่าไหร่") ||
+      lower.includes("วันนี้วัน") ||
+      lower.includes("วันนี้วันที่") ||
+      lower.includes("กี่โมง") ||
+      lower.includes("เวลาเท่าไหร่") ||
+      lower.includes("what day") ||
+      lower.includes("what time") ||
+      lower.includes("today's date");
+
+    if (isDateTime) {
+      const now = new Date();
+      const thaiDays = ["วันอาทิตย์", "วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์"];
+      const thaiMonths = [
+        "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      ];
+      const dayName = thaiDays[now.getDay()];
+      const dateNum = now.getDate();
+      const monthName = thaiMonths[now.getMonth()];
+      const yearBe = now.getFullYear() + 543;
+      const timeStr = now.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+
+      return `สวัสดีครับท่าน Human Owner วันนี้คือ**${dayName}ที่ ${dateNum} ${monthName} พ.ศ. ${yearBe}** (เวลาปัจจุบันประมาณ ${timeStr} น.) ครับ\n\nมีข้อมูลหรือภารกิจใดที่ต้องการให้ผม (${name}) ช่วยดำเนินการเพิ่มเติม แจ้งผมได้เลยครับ!`;
+    }
+
+    // 0.1 Greeting detection
+    const isGreeting =
+      lower === "สวัสดี" ||
+      lower === "สวัสดีครับ" ||
+      lower === "สวัสดีค่ะ" ||
+      lower === "ดีครับ" ||
+      lower === "hello" ||
+      lower === "hi" ||
+      lower === "hey" ||
+      lower === "หวัดดี";
+
+    if (isGreeting) {
+      return `สวัสดีครับท่าน Human Owner! ผมคือ **${name}** (${role}) ในองค์กร Superpowers AI ครับ ยินดีที่ได้คุยกับท่านครับ วันนี้ท่านมีคำถาม ปัญหาทางเทคนิค หรืองานที่ต้องการสั่งการแจ้งผมได้เลยครับ!`;
+    }
+
+    // 0.2 Check if user is asking general questions vs initiating a large project
+    const isProjectDirective =
+      lower.includes("สร้างระบบ") ||
+      lower.includes("ออกแบบ") ||
+      lower.includes("สถาปัตยกรรม") ||
+      lower.includes("พัฒนา") ||
+      lower.includes("วางแผนโปรเจกต์") ||
+      lower.includes("แตกงาน") ||
+      lower.includes("architecture") ||
+      lower.includes("directive") ||
+      lower.includes("initiative");
+
     // 1. CEO Strategic & Orchestration Persona (Aether)
     if (role === "CEO" || name.includes("Aether") || name.includes("CEO")) {
+      if (!isProjectDirective && p.length < 80) {
+        return `สวัสดีครับท่าน Human Owner สำหรับประเด็น: **"${p}"**\n\nในฐานะ CEO Aether ผมพร้อมประสานงานและให้ข้อมูลแก่ท่านโดยตรงครับ หากท่านมีข้อสงสัยเฉพาะเจาะจง หรือต้องการให้สั่งการฝ่ายวิจัย (Sophia) และฝ่ายวิศวกรรม (Marcus) ดำเนินงานด้านใด สามารถแจ้งรายละเอียดเพิ่มเติมได้ทันทีครับ!`;
+      }
       return `### ⚡ [Executive Directive & Strategic Assessment by ${name}]
 
 เรียนท่าน **Human Owner**, ผมได้ประเมินโจทย์และเป้าหมาย:
