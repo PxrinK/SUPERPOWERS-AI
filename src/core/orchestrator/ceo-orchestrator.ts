@@ -219,7 +219,7 @@ export class CEOOrchestrator {
       taskId: taskResearch.id,
       senderAgentId: "agent-ceo-001",
       receiverAgentId: taskResearch.assignedAgentId!,
-      messageType: "TASK_ASSIGNED",
+      messageType: "ASSIGNMENT",
       content: `CEO Aether assigned requirements analysis and domain mapping for: "${input.ownerGoal}"`,
     });
 

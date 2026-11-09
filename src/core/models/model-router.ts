@@ -26,24 +26,26 @@ export class ModelRouter {
     if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
     if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) return process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-    try {
-      const candidates = [
-        path.join(process.cwd(), ".env.local"),
-        path.join(process.cwd(), ".env"),
-        path.join(process.cwd(), "SUPERPOWERS-AI", ".env.local"),
-        path.join(process.cwd(), "SUPERPOWERS-AI", ".env"),
-      ];
-      for (const p of candidates) {
-        if (fs.existsSync(p)) {
-          const content = fs.readFileSync(p, "utf8");
-          const match = content.match(/GEMINI_API_KEY\s*=\s*(.+)/);
-          if (match && match[1]) {
-            const key = match[1].trim().replace(/^['"]|['"]$/g, "");
-            if (key) return key;
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        const candidates = [
+          path.join(process.cwd(), ".env.local"),
+          path.join(process.cwd(), ".env"),
+          path.join(process.cwd(), "SUPERPOWERS-AI", ".env.local"),
+          path.join(process.cwd(), "SUPERPOWERS-AI", ".env"),
+        ];
+        for (const p of candidates) {
+          if (fs.existsSync(p)) {
+            const content = fs.readFileSync(p, "utf8");
+            const match = content.match(/GEMINI_API_KEY\s*=\s*(.+)/);
+            if (match && match[1]) {
+              const key = match[1].trim().replace(/^['"]|['"]$/g, "");
+              if (key) return key;
+            }
           }
         }
-      }
-    } catch {}
+      } catch {}
+    }
 
     return "";
   }
