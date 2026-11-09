@@ -9,9 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.114",
+    "@types/papaparse": "^5.5.2",
+    "@types/pdf-parse": "^1.1.5",
     "ai": "^7.0.166",
     "lucide-react": "^1.70.0",
     "next": "16.3.6",
+    "papaparse": "^5.7.0",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "^4.6.7"

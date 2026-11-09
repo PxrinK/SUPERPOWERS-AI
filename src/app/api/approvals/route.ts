@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ApprovalManager } from "@/core/security/approval-gate";
+import { db } from "@/lib/db";
 import { z } from "zod";
 
 const DecisionSchema = z.object({
@@ -10,7 +11,17 @@ const DecisionSchema = z.object({
 
 export async function GET() {
   const approvals = ApprovalManager.listApprovals();
-  return NextResponse.json({ approvals });
+  // Join with project and tasks info so Owner sees exact deliverables
+  const enriched = approvals.map((appr) => {
+    const project = db.projects.get(appr.projectId);
+    const tasks = Array.from(db.tasks.values()).filter((t) => t.projectId === appr.projectId);
+    return {
+      ...appr,
+      project: project || null,
+      tasks,
+    };
+  });
+  return NextResponse.json({ approvals: enriched });
 }
 
 export async function POST(req: Request) {
@@ -32,9 +43,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Approval request not found" }, { status: 404 });
     }
 
+    const project = db.projects.get(updated.projectId);
+    const tasks = Array.from(db.tasks.values()).filter((t) => t.projectId === updated.projectId);
+
     return NextResponse.json({
       success: true,
-      approval: updated,
+      approval: {
+        ...updated,
+        project: project || null,
+        tasks,
+      },
     });
   } catch (err: any) {
     return NextResponse.json(

@@ -295,4 +295,12 @@ export class DataStore {
   }
 }
 
-export const db = DataStore.instance;
+const globalForDb = globalThis as unknown as {
+  superpowersDataStore: DataStore | undefined;
+};
+
+export const db = globalForDb.superpowersDataStore ?? DataStore.instance;
+
+if (process.env.NODE_ENV !== "production") {
+  globalForDb.superpowersDataStore = db;
+}

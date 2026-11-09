@@ -53,6 +53,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
+    { label: "Executive Chat", href: "/chat", icon: MessageSquare },
     { label: "Organization", href: "/organization", icon: Building2, badge: counts.departments },
     { label: "Agents Directory", href: "/agents", icon: Bot, badge: counts.agents },
     { label: "Projects", href: "/projects", icon: FolderKanban, badge: counts.projects },
@@ -95,9 +96,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               <span className="font-mono text-neutral-900 font-semibold">Owner & CEO</span>
             </div>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-neutral-500 font-medium">Execution Engine</span>
+              <span className="text-neutral-500 font-medium">AI Brain</span>
               <span className="font-mono text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                GUARDED V1
+                GEMINI 2.5 FLASH
               </span>
             </div>
           </div>
