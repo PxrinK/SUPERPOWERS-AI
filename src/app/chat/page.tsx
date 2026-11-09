@@ -48,6 +48,7 @@ export default function ChatPage() {
   const [selectedAgentId, setSelectedAgentId] = useState<string>("agent-ceo-001");
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string>("thread-default");
+  const [mobileChatSidebarOpen, setMobileChatSidebarOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [streamingText, setStreamingText] = useState("");
@@ -383,9 +384,9 @@ export default function ChatPage() {
 
   return (
     <Shell>
-      <div className="h-[calc(100vh-6rem)] max-w-7xl mx-auto flex gap-4">
+      <div className="h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-5.5rem)] max-w-7xl mx-auto flex flex-col lg:flex-row gap-3 lg:gap-4 relative">
         {/* Left Sidebar: Topic Threads & Agent Directory */}
-        <div className="w-80 border border-neutral-300 bg-white rounded flex flex-col shrink-0 overflow-hidden shadow-xs">
+        <div className="hidden lg:flex w-80 border border-neutral-300 bg-white rounded flex-col shrink-0 overflow-hidden shadow-xs">
           <div className="p-3 border-b border-neutral-200 bg-neutral-50 space-y-2">
             <button
               onClick={handleCreateNewThread}
@@ -487,12 +488,111 @@ export default function ChatPage() {
           </div>
         </div>
 
+        
+        {/* Mobile Chat Drawer Overlay */}
+        {mobileChatSidebarOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex">
+            <div
+              className="fixed inset-0 bg-neutral-950/60 backdrop-blur-xs"
+              onClick={() => setMobileChatSidebarOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl z-10 flex flex-col">
+              <div className="p-3 border-b border-neutral-200 bg-neutral-50 flex items-center justify-between">
+                <span className="text-xs font-bold text-neutral-900">หัวข้อแชต & Agent</span>
+                <button
+                  type="button"
+                  onClick={() => setMobileChatSidebarOpen(false)}
+                  className="p-1 text-neutral-500 hover:text-neutral-900 rounded"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="p-3 border-b border-neutral-200 bg-white">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCreateNewThread();
+                    setMobileChatSidebarOpen(false);
+                  }}
+                  className="w-full bg-neutral-950 hover:bg-neutral-800 text-white py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>เริ่มแชตเรื่องใหม่</span>
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-1 border-b border-neutral-200">
+                <div className="px-2 py-1 text-[10px] font-mono uppercase text-neutral-500 font-bold">
+                  หัวข้อสนทนา ({currentAgentThreads.length})
+                </div>
+                {currentAgentThreads.map((thread) => (
+                  <div
+                    key={thread.id}
+                    onClick={() => {
+                      setActiveThreadId(thread.id);
+                      setMobileChatSidebarOpen(false);
+                    }}
+                    className={`p-2 rounded text-xs cursor-pointer border ${
+                      thread.id === activeThreadId
+                        ? "bg-neutral-900 text-white border-neutral-900"
+                        : "bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-200"
+                    }`}
+                  >
+                    <div className="font-medium truncate">{thread.title}</div>
+                    <div className="text-[9px] font-mono opacity-70">{thread.updatedAt}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="h-44 flex flex-col shrink-0 bg-neutral-50">
+                <div className="px-3 py-1.5 border-b border-neutral-200 text-[10px] font-mono uppercase font-bold text-neutral-600">
+                  เลือก Agent
+                </div>
+                <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                  {agents.map((agent) => (
+                    <button
+                      key={agent.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAgentId(agent.id);
+                        const agentThreads = threads.filter((t) => t.agentId === agent.id);
+                        if (agentThreads.length > 0) setActiveThreadId(agentThreads[0].id);
+                        setMobileChatSidebarOpen(false);
+                      }}
+                      className={`w-full text-left p-1.5 rounded text-xs border ${
+                        agent.id === selectedAgentId
+                          ? "bg-neutral-800 text-white border-neutral-800"
+                          : "bg-white hover:bg-neutral-100 text-neutral-800 border-neutral-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{agent.name}</span>
+                        <span className="text-[9px] font-mono">{agent.role}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Main Interactive Chat Panel */}
         <div className="flex-1 border border-neutral-300 bg-white rounded flex flex-col overflow-hidden shadow-xs">
           {/* Header */}
           <div className="p-3 border-b border-neutral-200 bg-neutral-50 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded bg-neutral-900 text-white flex items-center justify-center font-mono text-xs font-bold">
+              
+            {/* Mobile Toggle Drawer Button */}
+            <button
+              type="button"
+              onClick={() => setMobileChatSidebarOpen(true)}
+              className="lg:hidden p-1.5 bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 rounded text-neutral-800 text-[11px] font-medium flex items-center space-x-1 shrink-0"
+              title="หัวข้อและ Agent"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">หัวข้อ/Agent</span>
+            </button>
+            <div className="w-7 h-7 rounded bg-neutral-900 text-white flex items-center justify-center font-mono text-xs font-bold shrink-0">
                 {selectedAgent?.role.slice(0, 2) || "AI"}
               </div>
               <div>
@@ -745,7 +845,7 @@ export default function ChatPage() {
               className="bg-neutral-950 hover:bg-neutral-800 disabled:opacity-50 text-white px-4 py-2 rounded text-xs font-medium flex items-center space-x-1.5 shrink-0 transition-colors cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{selectedAgent?.role === "CEO" ? "สั่งการ CEO" : "ส่งข้อความ"}</span>
+              <span className="hidden sm:inline">{selectedAgent?.role === "CEO" ? "สั่งการ CEO" : "ส่งข้อความ"}</span>
             </button>
           </form>
         </div>

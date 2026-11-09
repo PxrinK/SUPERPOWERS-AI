@@ -91,7 +91,7 @@ export default function DashboardPage() {
                 Submit raw high-level goals. The CEO (Aether) will analyze complexity, spin up departments, recruit specialist agents, delegate tasks, execute multi-agent QA, and request your approval prior to final execution.
               </p>
             </div>
-            <div className="shrink-0 flex items-center space-x-3 text-xs border-l border-neutral-200 pl-4">
+            <div className="shrink-0 flex items-center space-x-3 text-xs border-t md:border-t-0 md:border-l border-neutral-200 pt-3 md:pt-0 md:pl-4">
               <div>
                 <p className="text-[11px] text-neutral-500 font-mono">ORGANIZATION</p>
                 <p className="font-semibold text-neutral-900">{data?.organization?.name || "Loading..."}</p>
@@ -104,7 +104,7 @@ export default function DashboardPage() {
             <label className="block text-xs font-semibold text-neutral-800 mb-1">
               Submit Directive / Mission Statement:
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={goalInput}
@@ -148,7 +148,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Corporate Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
           <div className="border border-neutral-300 bg-white p-3.5 rounded">
             <div className="flex items-center justify-between text-neutral-500">
               <span className="text-xs font-medium">Departments</span>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Two Column Layout: Pending Approvals & Live Activity Logs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Pending Owner Approvals */}
           <div className="border border-neutral-300 bg-white p-4 rounded flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-200">

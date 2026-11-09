@@ -5,10 +5,7 @@ import { ModelRouter } from "@/core/models/model-router";
 export async function POST(req: Request) {
   try {
     const { agentId, message, conversationHistory } = await req.json();
-    const apiKey =
-      process.env.GEMINI_API_KEY ||
-      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-      "AIzaSyBeZSoEvaMDYOHiaii17_IpiiW3dxH4jtY";
+    const apiKey = ModelRouter.getApiKey();
 
     const targetAgent = AgentManager.getAgent(agentId) || {
       name: "Aether",
@@ -35,28 +32,30 @@ export async function POST(req: Request) {
     });
 
     let geminiRes: Response | null = null;
-    try {
-      geminiRes = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: sysInstruction }],
-          },
-          contents,
-          generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 8192,
-          },
-        }),
-      });
-    } catch (fetchErr) {
-      console.warn("Gemini fetch error, activating resilient fallback:", fetchErr);
+    if (apiKey) {
+      try {
+        geminiRes = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: sysInstruction }],
+            },
+            contents,
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 8192,
+            },
+          }),
+        });
+      } catch (fetchErr) {
+        console.warn("Gemini fetch error, activating resilient fallback:", fetchErr);
+      }
     }
 
-    // RESILIENT FALLBACK: If Gemini API is momentarily 503 Service Unavailable or network error
+    // RESILIENT FALLBACK: If Gemini API is momentarily offline, rate-limited, leaked key, or network error
     if (!geminiRes || !geminiRes.ok || !geminiRes.body) {
-      console.warn("Gemini stream 503/error, falling back to instant high-quality responder");
+      console.warn("Gemini stream unavailable, falling back to smart local responder");
       const fallbackAnswer = ModelRouter.generateSmartLocalResponse(message, targetAgent.name, targetAgent.role);
 
       const encoder = new TextEncoder();
@@ -73,7 +72,7 @@ export async function POST(req: Request) {
               clearInterval(interval);
               controller.close();
             }
-          }, 25);
+          }, 20);
         },
       });
 
