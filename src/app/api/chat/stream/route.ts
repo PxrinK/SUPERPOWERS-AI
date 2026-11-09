@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     const sysInstruction = `คุณคือ ${targetAgent.name} บทบาท: ${targetAgent.role} ในองค์กร Superpowers AI ตอบคำถามอย่างชาญฉลาด สุภาพ มีพลัง ละเอียด ตรงประเด็น และถ้าเป็นโค้ดให้เขียนโค้ดเต็มสมบูรณ์พร้อมใช้งานเสมอ: ${targetAgent.systemInstructions}`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+    const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
     const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
     if (conversationHistory && conversationHistory.length > 0) {
@@ -33,23 +33,33 @@ export async function POST(req: Request) {
 
     let geminiRes: Response | null = null;
     if (apiKey) {
-      try {
-        geminiRes = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: sysInstruction }],
-            },
-            contents,
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 8192,
-            },
-          }),
-        });
-      } catch (fetchErr) {
-        console.warn("Gemini fetch error, activating resilient fallback:", fetchErr);
+      for (const model of candidateModels) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: sysInstruction }],
+              },
+              contents,
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 8192,
+              },
+            }),
+          });
+
+          if (res.ok && res.body) {
+            geminiRes = res;
+            break;
+          } else {
+            console.warn(`Gemini stream (${model}) responded with status ${res.status}`);
+          }
+        } catch (fetchErr) {
+          console.warn(`Gemini stream (${model}) fetch error:`, fetchErr);
+        }
       }
     }
 
