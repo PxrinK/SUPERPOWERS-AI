@@ -384,7 +384,7 @@ export default function ChatPage() {
 
   return (
     <Shell>
-      <div className="h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-5.5rem)] max-w-7xl mx-auto flex flex-col lg:flex-row gap-3 lg:gap-4 relative">
+      <div className="h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-5.5rem)] w-full max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-3 lg:gap-4 relative">
         {/* Left Sidebar: Topic Threads & Agent Directory */}
         <div className="hidden lg:flex w-80 border border-neutral-300 bg-white rounded flex-col shrink-0 overflow-hidden shadow-xs">
           <div className="p-3 border-b border-neutral-200 bg-neutral-50 space-y-2">
@@ -624,7 +624,8 @@ export default function ChatPage() {
               const htmlSnippets = extractHtmlBlocks(item.text);
 
               return (
-                <div key={index} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
+                <div key={index} className={`flex flex-col ${isUser ? "items-end" : "items-start"} ${htmlSnippets.length > 0 || item.orchestration ? "w-full" : ""}`}>
+
                   <div className="flex items-center space-x-1.5 text-[10px] font-mono text-neutral-500 mb-1 px-1">
                     <span>{isUser ? "Human Owner (You)" : item.agentName}</span>
                     <span>•</span>
@@ -632,7 +633,7 @@ export default function ChatPage() {
                   </div>
 
                   <div
-                    className={`max-w-[90%] rounded p-3 text-xs leading-relaxed space-y-3 ${
+                    className={`${htmlSnippets.length > 0 || item.orchestration ? "w-full max-w-full" : isUser ? "max-w-[85%]" : "max-w-[92%]"} rounded p-3 text-xs leading-relaxed space-y-3 ${
                       isUser ? "bg-neutral-950 text-white" : "bg-white text-neutral-900 border border-neutral-300 shadow-sm"
                     }`}
                   >
