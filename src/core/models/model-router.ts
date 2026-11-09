@@ -73,56 +73,60 @@ export class ModelRouter {
     const apiKey = this.getApiKey();
 
     if (apiKey) {
-      try {
-        const sysInstruction = options.systemInstruction
-          ? `คุณคือ ${options.agentName || "Aether"} บทบาท: ${options.agentRole || "CEO"} ในองค์กร Superpowers AI ตอบคำถามอย่างชาญฉลาด สุภาพ ละเอียด ตรงประเด็น และถ้าเป็นโค้ดให้เขียนโค้ดเต็มสมบูรณ์พร้อมใช้งาน: ${options.systemInstruction}`
-          : "คุณคือ AI ผู้ช่วยอัจฉริยะระดับองค์กร ตอบคำถามอย่างรอบรู้ ละเอียด ตรงประเด็น และเขียนโค้ดภาษาต่างๆ ได้อย่างสมบูรณ์แบบ";
+      const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      const sysInstruction = options.systemInstruction
+        ? `คุณคือ ${options.agentName || "Aether"} บทบาท: ${options.agentRole || "CEO"} ในองค์กร Superpowers AI ตอบคำถามอย่างชาญฉลาด รอบรู้ สุภาพ เป็นกันเอง ละเอียด ตรงประเด็น ตอบได้ทุกเรื่องทั้งความรู้ทั่วไป ข่าวสาร สภาพอากาศ วิทยาศาสตร์ และงานเทคนิค/โค้ด (ถ้าเป็นโค้ดให้เขียนโค้ดเต็มสมบูรณ์พร้อมใช้งาน): ${options.systemInstruction}`
+        : "คุณคือ AI ผู้ช่วยอัจฉริยะระดับองค์กรและที่ปรึกษาส่วนตัว ตอบคำถามทุกเรื่องอย่างรอบรู้ ละเอียด ตรงประเด็น สุภาพ เป็นธรรมชาติ ตอบได้ทั้งความรู้ทั่วไป การดำเนินชีวิต และงานเทคโนโลยีระดับสูง";
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-        // Build multi-turn contents array
-        const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
-        if (options.conversationHistory && options.conversationHistory.length > 0) {
-          for (const turn of options.conversationHistory.slice(-6)) {
-            contents.push({
-              role: turn.role,
-              parts: [{ text: turn.text }],
-            });
-          }
+      // Build multi-turn contents array
+      const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+      if (options.conversationHistory && options.conversationHistory.length > 0) {
+        for (const turn of options.conversationHistory.slice(-6)) {
+          contents.push({
+            role: turn.role,
+            parts: [{ text: turn.text }],
+          });
         }
-        contents.push({
-          role: "user",
-          parts: [{ text: options.prompt }],
-        });
+      }
+      contents.push({
+        role: "user",
+        parts: [{ text: options.prompt }],
+      });
 
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: sysInstruction }],
-            },
-            contents,
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 8192,
-            },
-          }),
-        });
+      for (const model of candidateModels) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-        const data = await res.json();
-        if (data.error) {
-          console.warn("Gemini API returned error:", data.error.message || data.error);
-        } else {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: sysInstruction }],
+              },
+              contents,
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 8192,
+              },
+            }),
+          });
+
+          const data = await res.json();
+          if (data.error) {
+            console.warn(`Gemini (${model}) API error:`, data.error.message || data.error);
+            continue; // Fallback to next model
+          }
+
           const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (geminiReply) {
             const finalText = geminiReply.trim();
             this.responseCache.set(cacheKey, { response: finalText, timestamp: Date.now() });
             return finalText;
           }
+        } catch (err) {
+          console.warn(`Direct Gemini (${model}) API Call failed:`, err);
         }
-      } catch (err) {
-        console.warn("Direct Gemini API Call failed, falling back to local synthesis:", err);
       }
     }
 
@@ -136,44 +140,48 @@ export class ModelRouter {
     const apiKey = this.getApiKey();
     if (!apiKey) return null;
 
-    try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: systemInstruction }],
-          },
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-            maxOutputTokens: 8192,
-          },
-        }),
-      });
+    const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
-      const data = await res.json();
-      if (data.error) {
-        console.warn("Gemini JSON generation error:", data.error.message || data.error);
-        return null;
-      }
+    for (const model of candidateModels) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemInstruction }],
+            },
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: "application/json",
+              maxOutputTokens: 8192,
+            },
+          }),
+        });
 
-      let rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (rawJson) {
-        // Strip markdown code fences if wrapped
-        rawJson = rawJson.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-        // Extract substring between first { and last }
-        const firstBrace = rawJson.indexOf("{");
-        const lastBrace = rawJson.lastIndexOf("}");
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          rawJson = rawJson.substring(firstBrace, lastBrace + 1);
+        const data = await res.json();
+        if (data.error) {
+          console.warn(`Gemini (${model}) JSON generation error:`, data.error.message || data.error);
+          continue;
         }
-        return JSON.parse(rawJson) as T;
+
+        let rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawJson) {
+          // Strip markdown code fences if wrapped
+          rawJson = rawJson.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+          // Extract substring between first { and last }
+          const firstBrace = rawJson.indexOf("{");
+          const lastBrace = rawJson.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            rawJson = rawJson.substring(firstBrace, lastBrace + 1);
+          }
+          return JSON.parse(rawJson) as T;
+        }
+      } catch (e) {
+        console.warn(`Structured JSON generation failed for ${model}:`, e);
       }
-    } catch (e) {
-      console.warn("Structured JSON generation failed, fallback active:", e);
     }
     return null;
   }
@@ -229,7 +237,12 @@ export class ModelRouter {
       return `สวัสดีครับท่าน Human Owner! ผมคือ **${name}** (${role}) ในองค์กร Superpowers AI ครับ ยินดีที่ได้คุยกับท่านครับ วันนี้ท่านมีคำถาม ปัญหาทางเทคนิค หรืองานที่ต้องการสั่งการแจ้งผมได้เลยครับ!`;
     }
 
-    // 0.2 Check if user is asking general questions vs initiating a large project
+    // 0.2 Weather & Seasons detection
+    if (lower.includes("หน้าหนาว") || lower.includes("ฤดูหนาว") || (lower.includes("ฤดู") && lower.includes("เข้าสู่"))) {
+      return `สวัสดีครับท่าน Human Owner สำหรับคำถามเรื่องฤดูหนาวของประเทศไทย:\n\nตามสถิติและการประกาศของ**กรมอุตุนิยมวิทยา** ประเทศไทยมักจะเริ่มต้นเข้าสู่**ฤดูหนาวอย่างเป็นทางการในช่วงปลายเดือนตุลาคม (ประมาณสัปดาห์ที่ 3-4 ของเดือนตุลาคม) หรือต้นเดือนพฤศจิกายน** และจะสิ้นสุดลงในช่วงปลายเดือนกุมภาพันธ์ของปีถัดไปครับ\n\n**เกณฑ์การพิจารณาเข้าสู่ฤดูหนาวของไทย:**\n1. อุณหภูมิต่ำสุดบริเวณประเทศไทยตอนบนลดลงอยู่ในเกณฑ์อากาศเย็น (ต่ำกว่า 23°C) อย่างต่อเนื่อง\n2. ทิศทางลมระดับล่างเปลี่ยนเป็นลมตะวันออกเฉียงเหนือหรือลมฝ่ายเหนือ\n3. ปริมาณและการกระจายของฝนบริเวณตอนบนลดลงอย่างต่อเนื่องชัดเจนครับ`;
+    }
+
+    // 0.3 Check if user is asking general questions vs initiating a large project
     const isProjectDirective =
       lower.includes("สร้างระบบ") ||
       lower.includes("ออกแบบ") ||
@@ -243,8 +256,8 @@ export class ModelRouter {
 
     // 1. CEO Strategic & Orchestration Persona (Aether)
     if (role === "CEO" || name.includes("Aether") || name.includes("CEO")) {
-      if (!isProjectDirective && p.length < 80) {
-        return `สวัสดีครับท่าน Human Owner สำหรับประเด็น: **"${p}"**\n\nในฐานะ CEO Aether ผมพร้อมประสานงานและให้ข้อมูลแก่ท่านโดยตรงครับ หากท่านมีข้อสงสัยเฉพาะเจาะจง หรือต้องการให้สั่งการฝ่ายวิจัย (Sophia) และฝ่ายวิศวกรรม (Marcus) ดำเนินงานด้านใด สามารถแจ้งรายละเอียดเพิ่มเติมได้ทันทีครับ!`;
+      if (!isProjectDirective && p.length < 120) {
+        return `สวัสดีครับท่าน Human Owner สำหรับประเด็น: **"${p}"**\n\nผม (${name}) ยินดีให้ข้อมูลและดูแลอย่างเต็มที่ครับ ในฐานะ CEO ผมสามารถให้คำแนะนำทั้งในมิติภาพรวมธุรกิจ กลยุทธ์ สภาพแวดล้อม และประสานงานทีมวิจัย (Sophia) หรือทีมวิศวกรรม (Marcus) ให้ท่านได้ทันที\n\n*(💡 หากท่านเพิ่งเพิ่ม GEMINI_API_KEY บน Vercel อย่าลืมกด **Redeploy** บน Vercel 1 ครั้งเพื่อให้ระบบออนไลน์เชื่อมต่อสมอง AI หลักและตอบคำถามแบบ Real-time ได้ 100% ครบทุกคำถามครับ!)*`;
       }
       return `### ⚡ [Executive Directive & Strategic Assessment by ${name}]
 
