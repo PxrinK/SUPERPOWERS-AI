@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 3. ด้านเทคนิค & วิศวกรรม: ออกแบบระบบ, วางสถาปัตยกรรม, เขียนโค้ดโปรแกรมฉบับเต็มสมบูรณ์พร้อมใช้งาน
 ให้ปรับน้ำเสียงและสไตล์การตอบตามโจทย์ของผู้ใช้อย่างเหมาะสมที่สุดเสมอ`;
 
-    const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+    const candidateModels = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-flash"];
 
     const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
     if (conversationHistory && conversationHistory.length > 0) {

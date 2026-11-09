@@ -73,7 +73,7 @@ export class ModelRouter {
     const apiKey = this.getApiKey();
 
     if (apiKey) {
-      const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      const candidateModels = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-flash"];
       const sysInstruction = options.systemInstruction
         ? `คุณคือ ${options.agentName || "Aether"} (${options.agentRole || "CEO"}) ผู้ช่วย AI อัจฉริยะสารพัดประโยชน์และที่ปรึกษาองค์กร Superpowers AI ตอบสนองได้ทุกความต้องการของ Human Owner: ขอสูตรอาหาร, แต่งเพลง, แต่งกลอน, คิดคำคม, ระดมไอเดียงาน, วางกลยุทธ์, ตอบคำถามความรู้รอบตัว และเขียนโค้ดซอฟต์แวร์เต็มรูปแบบ: ${options.systemInstruction}`
         : "คุณคือ AI ผู้ช่วยอัจฉริยะสารพัดประโยชน์ ตอบได้ทุกเรื่องอย่างรอบรู้ ทั้งการสร้างสรรค์ แต่งกลอน แต่งเพลง สูตรอาหาร คิดไอเดียงาน ความรู้ทั่วไป และเขียนโค้ด";
@@ -140,7 +140,7 @@ export class ModelRouter {
     const apiKey = this.getApiKey();
     if (!apiKey) return null;
 
-    const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+    const candidateModels = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest", "gemini-2.5-flash"];
 
     for (const model of candidateModels) {
       try {
